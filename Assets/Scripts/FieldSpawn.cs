@@ -5,6 +5,12 @@ using UnityEngine.EventSystems;
 
 public class FieldSpawn : MonoBehaviour
 {
+	public int fieldSize = 6;
+
+	public GameObject fieldObject;
+	public GameObject columnPrefab;
+	public GameObject rowPrefab;
+
 	public List<Transform> fieldColumns;
 
 	public FieldHole[][] fieldHoles;
@@ -15,24 +21,37 @@ public class FieldSpawn : MonoBehaviour
 	{
 		GameManager.Instance.fieldSpawn = this;
 
-		fieldHoles = new FieldHole[fieldColumns.Count][];
+		CreateField();
+		FullSpawn();
+	}
 
-		for (int i = 0; i < fieldColumns.Count; i++)
+	private void CreateField()
+	{
+
+		foreach (Transform child in fieldObject.transform)
 		{
-			fieldHoles[i] = new FieldHole[fieldColumns.Count];
-
-			for (int j = 0; j < fieldColumns[i].childCount; j++)
-			{
-				FieldHole hole = fieldColumns[i].GetChild(j).GetComponent<FieldHole>();
-
-				hole.column = i;
-				hole.row = j;
-
-				fieldHoles[i][j] = hole;
-			}
+			Destroy(child.gameObject);
 		}
 
-		FullSpawn();
+		fieldHoles = new FieldHole[fieldSize][];
+
+		for (int i = 0; i < fieldSize; i++)
+		{
+			fieldHoles[i] = new FieldHole[fieldSize];
+
+			GameObject spawnedColumn = Instantiate(columnPrefab, fieldObject.transform);
+
+			for (int j = 0; j < fieldSize; j++)
+			{
+				GameObject spawnedRow = Instantiate(rowPrefab, spawnedColumn.transform);
+				FieldHole fieldHole = spawnedRow.GetComponent<FieldHole>();
+
+				fieldHole.column = i;
+				fieldHole.row = j;
+
+				fieldHoles[i][j] = fieldHole;
+			}
+		}
 	}
 
 	public void ValidateField()
@@ -52,7 +71,7 @@ public class FieldSpawn : MonoBehaviour
 		FullSpawn();
 	}
 
-	public void FullSpawn()
+	private void FullSpawn()
 	{
 		for (int i = 0; i < fieldHoles.Length; i++)
 		{
